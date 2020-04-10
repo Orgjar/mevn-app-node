@@ -4,6 +4,8 @@ import cors from 'cors';
 import path from 'path';
 import mongoose from 'mongoose'
 import note from './routes/note'
+import user from './routes/user'
+import login from './routes/login'
 
 const app = express();
 // const uri = 'mongodb://localhost:27017/mevn';
@@ -21,6 +23,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // });
 
 app.use('/api', note);
+app.use('/api', user);
+app.use('/api/login', login);
 
 mongoose.connect(uri, options)
   .then(() => {

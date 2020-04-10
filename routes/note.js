@@ -1,10 +1,14 @@
 import express from 'express'
-import Note from "../models/note";
+import Note from "../models/note"
+import { verifyAuth } from '../middlewares/auth'
 
 const router = express.Router();
 
-router.post('/note/new',(req, res) => {
+router.post('/note/new', verifyAuth, (req, res) => {
   const body = req.body;
+
+  body.userId = req.user._id
+
   Note.create(body)
     .then(note => {
       res.status(200).json(note);
@@ -32,10 +36,38 @@ router.get('/note/:id', (req, res) => {
     })
 });
 
-router.get('/notes', (req, res) => {
-  Note.find()
+// router.get('/notes', verifyAuth, (req, res) => {
+//
+//   const userId = req.user._id;
+//
+//   Note.find({userId})
+//     .then(notes => {
+//       res.json(notes);
+//     })
+//     .catch (error => {
+//       return res.status(400).json({
+//         message: 'Ocurrió un error',
+//         error: error
+//       });
+//     })
+// });
+
+router.get('/notes', verifyAuth, (req, res) => {
+
+  const userId = req.user._id;
+  const limit = Number(req.query.limit) || 0;
+  const offset = Number(req.query.offset) || 0;
+
+  Note.find({userId}).limit(limit).skip(offset)
     .then(notes => {
-      res.json(notes);
+      Note.find({userId}).countDocuments()
+        .then(totalNotes => {
+          res.json({
+            notes,
+            totalNotes
+          });
+        })
+
     })
     .catch (error => {
       return res.status(400).json({
